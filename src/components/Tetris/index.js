@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 import { checkCollision, createStage } from "../../gameHelpers";
 
@@ -16,6 +16,9 @@ import StartButton from "../StartButton";
 const Tetris = () => {
   const [dropTime, setDropTime] = useState(null);
   const [gameOver, setGameOver] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+
+  const mainRef = useRef(null);
 
   const [player, updatePlayerPos, resetPlayer, playerRotate] = usePlayer();
   const [stage, setStage, rowsCleared] = useStage(player, resetPlayer);
@@ -30,13 +33,15 @@ const Tetris = () => {
   };
 
   const startGame = () => {
+    mainRef.current.focus();
     setStage(createStage());
-    setDropTime(1000);
+    setDropTime(500);
     resetPlayer();
     setGameOver(false);
     setScore(0);
     setRows(0);
     setLevel(0);
+    setIsStarted(true);
   };
 
   const drop = () => {
@@ -59,7 +64,7 @@ const Tetris = () => {
   const keyUp = ({ keyCode }) => {
     if (!gameOver) {
       if (keyCode === 40) {
-        setDropTime(1000 / (level + 1) + 200);
+        setDropTime(500 / (level + 1) + 200);
       }
     }
   };
@@ -93,21 +98,43 @@ const Tetris = () => {
       tabIndex="0"
       onKeyDown={(e) => move(e)}
       onKeyUp={keyUp}
+      ref={mainRef}
     >
       <StyledTetris>
-        <Stage stage={stage} />
-        <aside>
-          {gameOver ? (
-            <Display gameOver={gameOver} text="Game Over" />
-          ) : (
-            <div>
-              <Display text={`Score: ${score}`} />
-              <Display text={`Rows: ${rows}`} />
-              <Display text={`Level: ${level}`} />
-            </div>
-          )}
-          <StartButton callback={startGame} />
-        </aside>
+        {isStarted && !gameOver && (
+          <>
+            <header>
+              {!gameOver && (
+                <>
+                  <Display text={`Score: ${score}`} />
+                  <Display text={`Rows: ${rows}`} />
+                  <Display text={`Level: ${level}`} />
+                </>
+              )}
+            </header>
+            <Stage stage={stage} />
+          </>
+        )}
+        {!isStarted && !gameOver && (
+          <div className="wrapper">
+            <h1>
+              React
+              <br />
+              Tetris
+            </h1>
+            <StartButton callback={startGame} text="Start Game" />
+          </div>
+        )}
+        {gameOver && (
+          <div className="wrapper">
+            <h1>
+              Game
+              <br />
+              Over
+            </h1>
+            <StartButton callback={startGame} text="Play Again" />
+          </div>
+        )}
       </StyledTetris>
     </StyledTetrisWrapper>
   );
