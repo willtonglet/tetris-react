@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import { ThemeProvider } from "styled-components";
+import { lightTheme, darkTheme } from "../../theme";
 
 import { checkCollision, createStage } from "../../gameHelpers";
 
@@ -8,15 +10,19 @@ import { useInterval } from "../../hooks/useInterval";
 import { usePlayer } from "../../hooks/usePlayer";
 import { useStage } from "../../hooks/useStage";
 import { useGameStatus } from "../../hooks/useGameStatus";
+import { useMobileDetect } from "../../hooks/useMobileDetect";
 
 import Stage from "../Stage";
 import Display from "../Display";
 import StartButton from "../StartButton";
+import Switch from "../Switch";
+import ControlButton from "../ControlButton";
 
 const Tetris = () => {
   const [dropTime, setDropTime] = useState(null);
   const [gameOver, setGameOver] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const [theme, setTheme] = useState("dark");
 
   const mainRef = useRef(null);
 
@@ -25,6 +31,7 @@ const Tetris = () => {
   const [score, setScore, rows, setRows, level, setLevel] = useGameStatus(
     rowsCleared
   );
+  const detectMobile = useMobileDetect();
 
   const movePlayer = (dir) => {
     if (!checkCollision(player, stage, { x: dir, y: 0 })) {
@@ -69,6 +76,16 @@ const Tetris = () => {
     }
   };
 
+  const handleMouseUp = () => {
+    if (!gameOver) {
+      setDropTime(500 / (level + 1) + 200);
+    }
+  };
+
+  const handleRotate = () => {
+    if (detectMobile.isMobile()) playerRotate(stage, 1);
+  };
+
   const dropPlayer = () => {
     setDropTime(null);
     drop();
@@ -88,55 +105,82 @@ const Tetris = () => {
     }
   };
 
+  const handleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  };
+
   useInterval(() => {
     drop();
   }, dropTime);
 
   return (
-    <StyledTetrisWrapper
-      role="button"
-      tabIndex="0"
-      onKeyDown={(e) => move(e)}
-      onKeyUp={keyUp}
-      ref={mainRef}
-    >
-      <StyledTetris>
-        {isStarted && !gameOver && (
-          <>
-            <header>
-              {!gameOver && (
-                <>
-                  <Display text={`Score: ${score}`} />
-                  <Display text={`Rows: ${rows}`} />
-                  <Display text={`Level: ${level}`} />
-                </>
+    <ThemeProvider theme={theme === "light" ? lightTheme : darkTheme}>
+      <StyledTetrisWrapper
+        role="button"
+        tabIndex="0"
+        onKeyDown={(e) => move(e)}
+        onKeyUp={keyUp}
+        ref={mainRef}
+      >
+        <StyledTetris>
+          {isStarted && !gameOver && (
+            <>
+              <header>
+                {!gameOver && (
+                  <>
+                    <Display text={`Score: ${score}`} />
+                    <Display text={`Rows: ${rows}`} />
+                    <Display text={`Level: ${level}`} />
+                  </>
+                )}
+              </header>
+              <Stage mobileCapture={handleRotate} stage={stage} />
+              {detectMobile.isMobile() && (
+                <footer>
+                  <ControlButton left callback={() => movePlayer(-1)} />
+                  <ControlButton
+                    down
+                    callback={() => dropPlayer()}
+                    onMouseUp={handleMouseUp}
+                  />
+                  <ControlButton right callback={() => movePlayer(1)} />
+                </footer>
               )}
-            </header>
-            <Stage stage={stage} />
-          </>
-        )}
-        {!isStarted && !gameOver && (
-          <div className="wrapper">
-            <h1>
-              React
-              <br />
-              Tetris
-            </h1>
-            <StartButton callback={startGame} text="Start Game" />
-          </div>
-        )}
-        {gameOver && (
-          <div className="wrapper">
-            <h1>
-              Game
-              <br />
-              Over
-            </h1>
-            <StartButton callback={startGame} text="Play Again" />
-          </div>
-        )}
-      </StyledTetris>
-    </StyledTetrisWrapper>
+            </>
+          )}
+          {(!isStarted || gameOver) && (
+            <Switch
+              onChange={handleTheme}
+              text={theme === "light" ? "light" : "dark"}
+            />
+          )}
+          {!isStarted && !gameOver && (
+            <div className="wrapper">
+              <h1>
+                React
+                <br />
+                Tetris
+              </h1>
+              <StartButton callback={startGame} text="Start Game" />
+            </div>
+          )}
+          {gameOver && (
+            <div className="wrapper">
+              <h1>
+                Game
+                <br />
+                Over
+              </h1>
+              <StartButton callback={startGame} text="Play Again" />
+            </div>
+          )}
+        </StyledTetris>
+      </StyledTetrisWrapper>
+    </ThemeProvider>
   );
 };
 

@@ -16,7 +16,7 @@ export const StyledTetrisWrapper = styled.div`
     h1 {
       font-family: Pixel, Arial, Helvetica, sans-serif;
       font-size: 4.6rem;
-      color: #fff;
+      color: ${({ theme }) => theme.text};
     }
   }
 `;
@@ -28,7 +28,7 @@ export const StyledTetris = styled.div`
   justify-content: center;
   min-height: 100vh;
   padding: 0 2rem;
-  background-color: #222;
+  background-color: ${({ theme }) => theme.bg};
 
   header {
     display: flex;
@@ -36,5 +36,13 @@ export const StyledTetris = styled.div`
     align-items: center;
     justify-content: center;
     margin-bottom: 1rem;
+  }
+
+  footer {
+    margin-top: 1rem;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    display: flex;
   }
 `;

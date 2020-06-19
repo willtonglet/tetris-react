@@ -1,10 +1,8 @@
 import React from "react";
 import Tetris from "./components/Tetris/index";
 
-const App = () => (
-  <div className="App">
-    <Tetris />
-  </div>
-);
+const App = () => {
+  return <Tetris />;
+};
 
 export default App;
